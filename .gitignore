@@ -1,5 +1,9 @@
 *.pyc
 
+# Data storage
+threads/*
+!threads/__init__.py
+
 # Packages
 *.egg
 !/tests/**/*.egg
