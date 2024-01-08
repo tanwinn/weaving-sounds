@@ -4,7 +4,6 @@ unittests.test_models.py
 Test ~/models
 """
 
-import datetime
 from pprint import pformat as pf
 
 import pytest
@@ -40,15 +39,16 @@ class TestFacebook:
         print(f"Test Data:\n{pf(test_fixture_invalid_event)}")
         with pytest.raises(ValidationError):
             facebook.Event(**test_fixture_invalid_event)
-            
+
+
 class TestWeaver:
     """Test weaver models"""
-    
+
     def test_valid_sound_thread_metadata(self, test_fixture_valid_st_metadata):
         print(f"Test Data:\n{pf(test_fixture_valid_st_metadata)}")
         weaver.SoundThreadMetadata(**test_fixture_valid_st_metadata)
-    
+
     def test_invalid_sound_thread_metadata(self, test_fixture_invalid_st_metadata):
         print(f"Test Data:\n{pf(test_fixture_invalid_st_metadata)}")
-        with pytest.raises(ValidationError):    
+        with pytest.raises(ValidationError):
             weaver.SoundThreadMetadata(**test_fixture_invalid_st_metadata)

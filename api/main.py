@@ -8,7 +8,6 @@ from pathlib import Path
 from pprint import pformat as pf
 
 from fastapi import FastAPI, Request
-from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
 
 from api import datastore, utils
@@ -76,9 +75,9 @@ async def messenger_post(data: facebook.Event) -> str:
         if messages[0]:
             message = messages[0]
             LOGGER.warning(f"Message object: \n{pf(message.message.model_dump())}")
-            text = utils.handle_user_message(message.message)
+            _ = utils.handle_user_message(message.message)
             # We retrieve the Facebook user ID of the sender
-            fb_id = message.sender.id
+            # fb_id = message.sender.id
     return "Success!"
 
 

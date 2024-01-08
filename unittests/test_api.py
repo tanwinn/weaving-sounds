@@ -17,7 +17,7 @@ def test_lifespan(api_client_fixture, mocker):
     """Test app's startup and shutdown lifespan events."""
     on_startup = mocker.patch("api.datastore.load_memory_from_storage")
     on_shutdown = mocker.patch("api.datastore.load_storage_from_memory")
-    
+
     with api_client_fixture:
         # After startup
         on_startup.assert_called_once()
@@ -66,6 +66,5 @@ def test_post_message_200_resp_valid_data(
     api_client_fixture, test_fixture_valid_event, mocker
 ):
     mocker.patch("api.utils.handle_user_message", return_value="mocked response")
-    resp = api_client_fixture.post(f"/webhook", json=test_fixture_valid_event)
+    resp = api_client_fixture.post("/webhook", json=test_fixture_valid_event)
     assert resp.status_code == 200
-

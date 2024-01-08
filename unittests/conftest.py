@@ -10,7 +10,7 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from api import main, utils
+from api import main
 
 ROOT = Path(__file__).joinpath("..").joinpath("..").resolve()
 TEST_DATA_PATH = ROOT / "unittests" / "data"
@@ -95,5 +95,6 @@ def test_fixture_valid_st_metadata(request):
 def test_fixture_invalid_st_metadata(request):
     """Test data for invalid sound thread metadata models"""
     return request.param
+
 
 # ================================= Weaver Test data ends.

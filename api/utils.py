@@ -7,12 +7,9 @@ Utilities used by api.
 # TODO: better name
 
 import logging
-import re
 from collections.abc import Mapping
 from datetime import datetime
 from mimetypes import guess_extension
-from pathlib import Path
-from pprint import pformat as pf
 from typing import Optional
 
 import pytz
