@@ -1,6 +1,8 @@
-from pathlib import Path
-import json, yaml
+import json
 import pprint
+from pathlib import Path
+
+import yaml
 
 facebook_data_dir = Path(__file__).joinpath("..").resolve()
 

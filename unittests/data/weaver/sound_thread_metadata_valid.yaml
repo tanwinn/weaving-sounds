@@ -3,16 +3,21 @@ valid:
     title: leafy-root
     summary: Karaoke at K-Box
     datetime: !!timestamp 2023-12-17 18:27:00.000
+    audio_type: wav
   - key: o0qe82jz1
     summary: Brunch conversation at Stable Cafe
     datetime: !!timestamp 2023-11-19 11:13:23.000
+    audio_type: mp3
   - key: 912ueiaz
     title: library
     datetime: !!timestamp 2024-01-02 14:09:00.000
+    audio_type: m4a
 invalid:
   - title: missing-key-jasime-pearls
     summary: 25% sugar and 75% ice
     datetime: !!timestamp 2024-01-06 14:27:12.000
+    audio_type: mp3
   - key: 61sd28hdj1
     title: missing-datetime-fiction-books
     summary: The Seven Husbands of Evelyn Hugo
+    audio_type: wav

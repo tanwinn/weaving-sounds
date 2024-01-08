@@ -3,10 +3,10 @@ tests.conftest.py
 ~~~~~~~~~~~~~~~~~
 Test fixture for the unit test suite. All test fixture defined in conftest MUST have the word `fixture`.
 """
+import json
 from pathlib import Path
 
 import pytest
-import json
 import yaml
 from fastapi.testclient import TestClient
 

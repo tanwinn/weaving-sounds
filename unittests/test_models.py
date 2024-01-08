@@ -4,13 +4,14 @@ unittests.test_models.py
 Test ~/models
 """
 
+import datetime
 from pprint import pformat as pf
 
 import pytest
 from pydantic import ValidationError
 
 from models import facebook, weaver
-import datetime
+
 
 class TestFacebook:
     """Test Facebook models"""

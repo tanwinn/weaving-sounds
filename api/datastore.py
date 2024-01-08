@@ -5,8 +5,11 @@ Database storage related CRUD operations.
 TODO: set up actual database lol
 """
 import csv
+import datetime
 import logging
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Optional
 
 from models import weaver
 
@@ -34,7 +37,7 @@ def load_storage_from_memory():
     """Update the storage (metadatas.csv file) from in-memory api.datastore.METADATAS_ - for app teardown."""
     with open(THREAD_METADATAS_FILE, "w") as wfile:
         writer = csv.DictWriter(
-            wfile, fieldnames=["key", "title", "summary", "date", "time"]
+            wfile, fieldnames=weaver.SoundThreadMetadata.__fields__.keys()
         )
         writer.writeheader()
 
@@ -42,20 +45,48 @@ def load_storage_from_memory():
             writer.writerow(dict(data))
     LOGGER.warning(f"Successfully loaded storage from memory.")
 
-def insert_thread(key:str, audio_file: any):
-    """Insert the audio file to threads directory"""
+
+def insert_thread(
+    key: str,
+    audio_content: any,
+    audio_type: str,
+    dt: datetime.datetime,
+    title: Optional[str] = None,
+) -> str:
+    """Save the audio file (sound thread) to threads directory. Insert the metadata to the datastore.
+    Args:
+    key -- the audio index key used as the unique identifier for the static file stored in threads & metadata table.
+    audio_content -- the downloaded audio content
+    audio_type -- the downloaded audio file extension
+    dt -- datetime of the audio content
+    title -- optional. Human-readable title set by users.
+
+    Returns:
+    A key representing the filename stored in threads and index od the metadata in datastore.
+    """
+
+    # Save the static
+    with open(str(THREADS_DIR / f"{key}.{audio_type}"), "wb") as file:
+        for chunk in response.iter_content(chunk_size=10 * 1024):
+            file.write(chunk)
+    upsert_metadata(metadata)
+
 
 def delete_thread(key: str):
     """Delete the audio file and its metadata"""
 
+
 def get_thread(key: str):
-    """Get the audio file by key"""
+    """Get the audio file by key index"""
+
 
 def upsert_metadata(metadata: weaver.SoundThreadMetadata):
     """Insert/Update the metadatas of a sound thread to in-memory"""
 
-def get_metadata(key: str = None, title: str = None):
-    """Get metadata by audio key or metadata title."""
-    if key or title:
-        pass
-    raise AttributeError("Insufficient params: needs either thread key or title.")
+
+def get_metadata(key: str):
+    """Get metadata by key index"""
+
+
+def get_keys_by_title(title: str) -> Sequence[str]:
+    """Get the key index by titles. Since titles can be duplicated, there can be multiple keys mapped to the same title."""

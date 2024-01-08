@@ -8,6 +8,7 @@ import pytest
 
 import api
 
+
 def test_client(api_client_fixture):
     assert api_client_fixture
 
