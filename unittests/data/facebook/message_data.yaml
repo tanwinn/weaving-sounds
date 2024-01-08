@@ -1,0 +1,5 @@
+"('valid:\\n'\n '- mid: m_1457764197618:41d102a3e1ae206a38\\n'\n '  reply_to:\\n'\n '    mid: m_1fTq8oLumEyIp3Q2MR-aY7IfLZDamVrALniheU\\\
+  n'\n '  text: hello, world!\\n'\n '- attachments:\\n'\n '  - payload:\\n'\n '      url: <ATTACHMENT_URL>\\\
+  n'\n '    type: image\\n'\n '  mid: mid.$cAAJdkrCd2ORnva8ErFhjGm0X_Q_c\\n'\n '- attachments:\\n'\n '\
+  \  - payload:\\n'\n '      is_reusable: true\\n'\n '      url: <ATTACHMENT_URL>\\n'\n '    type: image\\\
+  n'\n '  mid: mid.$cAAJdkrCd2ORnva8ErFhjGm0X_Q_c\\n'\n '- mid: m_1457764197618:41d102a3e1ae206a38\\n')"

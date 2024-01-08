@@ -1,0 +1,37 @@
+{
+    "valid": [
+        {
+            "mid": "m_1457764197618:41d102a3e1ae206a38",
+            "text": "hello, world!",
+            "reply_to": {
+                "mid": "m_1fTq8oLumEyIp3Q2MR-aY7IfLZDamVrALniheU"
+            }
+        },
+        {
+            "mid": "mid.$cAAJdkrCd2ORnva8ErFhjGm0X_Q_c",
+            "attachments": [
+                {
+                    "type": "image",
+                    "payload": {
+                        "url": "<ATTACHMENT_URL>"
+                    }
+                }
+            ]
+        },
+        {
+            "mid": "mid.$cAAJdkrCd2ORnva8ErFhjGm0X_Q_c",
+            "attachments": [
+                {
+                    "type": "image",
+                    "payload": {
+                        "url": "<ATTACHMENT_URL>",
+                        "is_reusable": true
+                    }
+                }
+            ]
+        },
+        {
+            "mid": "m_1457764197618:41d102a3e1ae206a38"
+        }
+    ]
+}

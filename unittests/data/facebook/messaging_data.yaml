@@ -1,0 +1,6 @@
+"('valid:\\n'\n '- message:\\n'\n '    mid: m_1457764197618:41d102a3e1ae206a38\\n'\n '    reply_to:\\\
+  n'\n '      mid: m_1fTq8oLumEyIp3Q2MR-aY7IfLZDamVrALniheU\\n'\n '    text: hello, world!\\n'\n '  recipient:\\\
+  n'\n '    id: <PAGE_ID>\\n'\n '  sender:\\n'\n '    id: <PSID>\\n'\n '  timestamp: 1458692752478\\n'\n\
+  \ '- message:\\n'\n '    attachments:\\n'\n '    - payload:\\n'\n '        url: <ATTACHMENT_URL>\\n'\n\
+  \ '      type: image\\n'\n '    mid: mid.$cAAJdkrCd2ORnva8ErFhjGm0X_Q_c\\n'\n '  recipient:\\n'\n '\
+  \    id: <PAGE_ID>\\n'\n '  sender:\\n'\n '    id: <PSID>\\n'\n '  timestamp: 1518479195308\\n')"

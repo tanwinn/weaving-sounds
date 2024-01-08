@@ -1,0 +1,34 @@
+{
+    "valid": [
+        {
+            "recipient":{
+                "id":"sender_id"
+            },
+            "message":{
+                "text":"this is a message"
+            }
+        }
+    ],
+    "invalid": [
+        {
+            "recipient":{
+                "id":"sender_id"
+            },
+            "message":{
+                "text":[]
+            }
+        },
+        {
+            "recipient":{},
+            "message":{
+                "text":"text"
+            }
+        },
+        {
+            "recipient":{
+                "id":"sender_id"
+            }
+        }
+    ]
+}
+
