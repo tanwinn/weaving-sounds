@@ -27,21 +27,26 @@ LOGGER = logging.getLogger(__name__)
 def handle_user_message(message: facebook.Message):
     """If the user message's attachments are audios, archive them."""
     try:
-        for i, attachment in enumerate(message.attachments) :
-            LOGGER.warning(f"type:{attachment.type};\nURL:{attachment.payload.url}")
-            __extract_and_store_audio_from_url(attachment=attachment, key=f"{message.mid}--{i}")
+        for i, attachment in enumerate(message.attachments):
+            # LOGGER.warning(f"type:{attachment.type};\nURL:{attachment.payload.url}")
+            __extract_and_store_audio_from_url(
+                attachment=attachment, key=f"{message.mid}--{i}"
+            )
     except AttributeError:  # message does not have attachments
         return
 
 
-def __extract_header_datetime(header: Mapping, timezone: datetime.tzinfo = pytz.timezone("America/Los_Angeles")) -> datetime:
+def __extract_header_datetime(
+    header: Mapping, timezone: datetime.tzinfo = pytz.timezone("America/Los_Angeles")
+) -> datetime:
     """Extract datetime Fri, 01 Jan 1999 00:00:00 GMT
     Args:
     header -- The http response header json
     timezone -- Optional - The timezone converting to. Default is America/Los_Angeles timezone.
-    
+
     Returns:
-    The converted datetime representing as a datetime. If header doesn't have a datetime, return now."""
+    The converted datetime representing as a datetime. If header doesn't have a datetime, return now.
+    """
     header_dt = (
         header.get("Date", None)
         or header.get("Last-Modified", None)
@@ -62,7 +67,10 @@ def __extract_attachment_filename(header: Mapping) -> Optional[str]:
     name = header.get("Content-Disposition").strip("attachment; filename=")
     return name if name else None
 
-def __extract_and_store_audio_from_url(attachment: facebook.Attachment, key: str) -> str:
+
+def __extract_and_store_audio_from_url(
+    attachment: facebook.Attachment, key: str
+) -> str:
     """Download the audio from url to ./records and store its metadata to datastore's 'METADATAS table."""
     # Ensure that the attachment is an audio type and has a downloadable url
     if (
@@ -79,8 +87,15 @@ def __extract_and_store_audio_from_url(attachment: facebook.Attachment, key: str
     dt = __extract_header_datetime(header)
     filename = __extract_attachment_filename(header)
     filetype = guess_extension(header.get("Content-Type"))
+    LOGGER.warning(f"GUESSTYPE: {filetype}")
     if not filetype:  # if we cannot guess the file type (extension), raise error
         raise AttributeError("Cannot detech the attachment's audio file extension.")
 
     # Save the static file to threads
-    datastore.insert_thread(response, key, dt, filename, filetype.strip(".")[1])
+    datastore.insert_thread(
+        key=key,
+        audio_content=response,
+        dt=dt,
+        title=filename,
+        audio_type=filetype.strip("."),
+    )

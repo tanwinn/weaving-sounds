@@ -76,7 +76,7 @@ async def messenger_post(data: facebook.Event) -> str:
         if messages[0]:
             message = messages[0]
             LOGGER.warning(f"Message object: \n{pf(message.message.model_dump())}")
-            # text = utils.handle_user_message(message.message)
+            text = utils.handle_user_message(message.message)
             # We retrieve the Facebook user ID of the sender
             fb_id = message.sender.id
     return "Success!"

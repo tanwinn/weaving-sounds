@@ -67,9 +67,13 @@ def insert_thread(
 
     # Save the static
     with open(str(THREADS_DIR / f"{key}.{audio_type}"), "wb") as file:
-        for chunk in response.iter_content(chunk_size=10 * 1024):
+        for chunk in audio_content.iter_content(chunk_size=10 * 1024):
             file.write(chunk)
-    upsert_metadata(metadata)
+    upsert_metadata(
+        weaver.SoundThreadMetadata(
+            key=key, title=title, audio_type=audio_type, datetime=dt
+        )
+    )
 
 
 def delete_thread(key: str):
@@ -82,6 +86,7 @@ def get_thread(key: str):
 
 def upsert_metadata(metadata: weaver.SoundThreadMetadata):
     """Insert/Update the metadatas of a sound thread to in-memory"""
+    _METADATAS[metadata.key] = metadata
 
 
 def get_metadata(key: str):
