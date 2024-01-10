@@ -5,6 +5,7 @@ Facebook Message models
 """
 from collections.abc import Mapping, Sequence
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -39,7 +40,7 @@ class Message(BaseModel):
     text: str = None
     quick_reply: Mapping = None
     reply_to: Mapping = None
-    attachments: Sequence[Attachment] = []
+    attachments: Optional[Sequence[Attachment]] = None
 
 
 class User(BaseModel):

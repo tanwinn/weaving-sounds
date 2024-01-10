@@ -10,7 +10,7 @@ import pytest
 import yaml
 from fastapi.testclient import TestClient
 
-from api import main
+from api import main, utils
 
 ROOT = Path(__file__).joinpath("..").joinpath("..").resolve()
 TEST_DATA_PATH = ROOT / "unittests" / "data"
@@ -31,11 +31,18 @@ FACEBOOK_TEST_DATA_PATH = TEST_DATA_PATH / "facebook"
 with open(str(FACEBOOK_TEST_DATA_PATH / "message_data.json")) as outfile:
     MESSAGE_DATA = json.load(outfile)
     VALID_MESSAGE_DATA = MESSAGE_DATA.get("valid")
+    INVALID_MESSAGE_DATA = MESSAGE_DATA.get("invalid")
 
 
 @pytest.fixture(scope="session", params=VALID_MESSAGE_DATA)
 def test_fixture_valid_message(request):
     """Test data for valid message models"""
+    return request.param
+
+
+@pytest.fixture(scope="session", params=INVALID_MESSAGE_DATA)
+def test_fixture_invalid_message(request):
+    """Test data for invalid message models"""
     return request.param
 
 
