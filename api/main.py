@@ -9,6 +9,7 @@ from pprint import pformat as pf
 
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.exceptions import RequestValidationError
 
 from api import datastore, utils
 from models import facebook
@@ -74,8 +75,12 @@ async def messenger_post(data: facebook.Event) -> str:
         messages = entry.messaging
         if messages[0]:
             message = messages[0]
+            LOGGER.warning(f"userID: {message.sender.id}")
             LOGGER.warning(f"Message object: \n{pf(message.message.model_dump())}")
-            _ = utils.handle_user_message(message.message)
+            try:
+                _ = utils.handle_user_message(message.message)
+            except Exception as e:
+                LOGGER.warning(f"Error: {e}")
             # We retrieve the Facebook user ID of the sender
             # fb_id = message.sender.id
     return "Success!"
@@ -85,3 +90,13 @@ async def messenger_post(data: facebook.Event) -> str:
 def get_privacy_policy():
     with open(PRAVICY_POLICY_PATH) as rfile:
         return rfile.read()
+
+
+@APP.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+
+    exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')
+    # or logger.error(f'{exc}')
+    LOGGER.error(request, exc_str)
+    content = {'status_code': 10422, 'message': exc_str, 'data': None}
+    return JSONResponse(content=content, status_code=422)

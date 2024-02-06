@@ -86,21 +86,57 @@ def test_fixture_invalid_event(request):
 
 WEAVER_TEST_DATA_PATH = TEST_DATA_PATH / "weaver"
 
-with open(str(WEAVER_TEST_DATA_PATH / "sound_thread_metadata_valid.yaml")) as outfile:
+with open(str(WEAVER_TEST_DATA_PATH / "voice_metadata.yaml")) as outfile:
     METADATA_DATA = yaml.safe_load(outfile)
-    VALID_ST_METADATA = METADATA_DATA.get("valid")
-    INVALID_ST_METADATA = METADATA_DATA.get("invalid")
+    VALID_METADATA = METADATA_DATA.get("valid")
+    INVALID_METADATA = METADATA_DATA.get("invalid")
 
 
-@pytest.fixture(scope="session", params=VALID_ST_METADATA)
-def test_fixture_valid_st_metadata(request):
-    """Test data for valid sound thread metadata models"""
+@pytest.fixture(scope="session", params=VALID_METADATA)
+def test_fixture_valid_voice_metadata(request):
+    """Test data for valid voice metadata models"""
     return request.param
 
 
-@pytest.fixture(scope="session", params=INVALID_ST_METADATA)
-def test_fixture_invalid_st_metadata(request):
-    """Test data for invalid sound thread metadata models"""
+@pytest.fixture(scope="session", params=INVALID_METADATA)
+def test_fixture_invalid_voice_metadata(request):
+    """Test data for invalid voice metadata models"""
+    return request.param
+
+
+with open(str(WEAVER_TEST_DATA_PATH / "user.yaml")) as outfile:
+    USER_DATA = yaml.safe_load(outfile)
+    VALID_USER_DATA = USER_DATA.get("valid")
+    INVALID_USER_DATA = USER_DATA.get("invalid")
+
+
+@pytest.fixture(scope="session", params=VALID_USER_DATA)
+def test_fixture_valid_user(request):
+    """Test data for valid user models"""
+    return request.param
+
+
+@pytest.fixture(scope="session", params=INVALID_USER_DATA)
+def test_fixture_invalid_user(request):
+    """Test data for invalid user models"""
+    return request.param
+
+
+with open(str(WEAVER_TEST_DATA_PATH / "prompt.yaml")) as outfile:
+    PROMPT_DATA = yaml.safe_load(outfile)
+    VALID_PROMPT_DATA = PROMPT_DATA.get("valid")
+    INVALID_PROMPT_DATA = PROMPT_DATA.get("invalid")
+
+
+@pytest.fixture(scope="session", params=VALID_PROMPT_DATA)
+def test_fixture_valid_prompt(request):
+    """Test data for valid prompt models"""
+    return request.param
+
+
+@pytest.fixture(scope="session", params=INVALID_PROMPT_DATA)
+def test_fixture_invalid_prompt(request):
+    """Test data for invalid prompt models"""
     return request.param
 
 

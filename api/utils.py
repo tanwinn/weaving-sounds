@@ -89,7 +89,7 @@ def __extract_and_store_audio_from_url(
     except requests.exceptions.RequestException as e:
         raise requests.exceptions.HTTPError(e)
 
-    # Extract neccesary metadata for weaver.SoundThreadMetadata
+    # Extract neccesary metadata for weaver.VoiceMetadata
     header = response.headers
     dt = extract_header_datetime(header)
     filename = extract_attachment_filename(header)
@@ -98,10 +98,10 @@ def __extract_and_store_audio_from_url(
         raise AttributeError("Cannot detech the attachment's audio file extension.")
 
     # Save the static file to threads
-    datastore.insert_thread(
+    datastore.insert_sound(
         key=key,
         audio_content=response,
         dt=dt,
         title=filename,
-        audio_type=filetype.strip("."),
+        audio_extension=filetype.strip("."),
     )

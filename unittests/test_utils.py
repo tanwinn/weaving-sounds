@@ -99,14 +99,14 @@ def test_extract_attachment_file_name_valid():
 )
 def test_handle_user_message_attribute_error(msg_data, mocker):
     # Mock external deps
-    mocker.patch("api.datastore.insert_thread")
+    mocker.patch("api.datastore.insert_sound")
     invalid_msg = facebook.Message.model_validate(msg_data)
     with pytest.raises(AttributeError):
         utils.handle_user_message(invalid_msg)
 
 
 def test_handle_user_message_http_error(mocker):
-    mocker.patch("api.datastore.insert_thread")
+    mocker.patch("api.datastore.insert_sound")
     mocker.patch("requests.get", side_effect=requests.exceptions.ConnectionError())
     message = facebook.Message(
         mid="rainy-days",
@@ -124,7 +124,7 @@ def test_handle_user_message_http_error(mocker):
 
 def test_handle_user_message_filetype_unknown(mocker):
     # Mock external deps
-    mocker.patch("api.datastore.insert_thread")
+    mocker.patch("api.datastore.insert_sound")
     mocker.patch(
         "requests.get",
         return_value=mocker.Mock(
@@ -153,7 +153,7 @@ def test_handle_user_message_filetype_unknown(mocker):
 
 def test_handle_user_message_succeeds(mocker):
     # Mock external deps
-    save_file_action = mocker.patch("api.datastore.insert_thread")
+    save_file_action = mocker.patch("api.datastore.insert_sound")
     mocked_resp = mocker.Mock(
         headers=__make_header(
             {
@@ -181,5 +181,5 @@ def test_handle_user_message_succeeds(mocker):
         audio_content=mocked_resp,
         dt=__from_ts("2024-01-03 19:30:00", "America/Los_Angeles"),
         title="oatmilk.wav",
-        audio_type="wav",
+        audio_extension="wav",
     )

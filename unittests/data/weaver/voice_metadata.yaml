@@ -1,0 +1,16 @@
+valid:
+  - key: u12jd9xsb
+    prompt_id: 1
+    username: tanwinn
+    datetime: !!timestamp 2023-12-17 18:27:00.000
+    audio_extension: wav
+invalid:
+  - title: missing-key-jasime-pearls
+    prompt_id: 1
+    username: tanwinn
+    datetime: !!timestamp 2024-01-06 14:27:12.000
+    audio_extension: mp3
+  - key: 61sd28hdj1
+    prompt_id: 1
+    username: tanwinn
+    audio_extension: wav

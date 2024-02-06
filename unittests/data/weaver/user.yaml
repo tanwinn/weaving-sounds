@@ -1,0 +1,31 @@
+valid:
+- username: tanwinn
+  first_name: Thanh
+  last_name: Nguyen
+  voice_set:
+  - voice_record_12.wav
+  - voice_record_23.wav
+  prompt_set:
+  - 1
+  - 2
+- username: tanwinn
+  first_name: Thanh
+  last_name: Nguyen
+  voice_set: []
+  prompt_set: []
+- username: tanwinn
+  first_name: Thanh
+  last_name: Nguyen
+invalid:
+- first_name: Thanh
+  last_name: Nguyen
+  voice_set:
+  - voice_record_12.wav
+  prompt_set:
+  - 1
+- username: tanwinn
+  last_name: Nguyen
+  voice_set:
+  - voice_record_23.wav
+  prompt_set:
+  - 1

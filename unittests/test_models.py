@@ -51,11 +51,29 @@ class TestFacebook:
 class TestWeaver:
     """Test weaver models"""
 
-    def test_valid_sound_thread_metadata(self, test_fixture_valid_st_metadata):
-        print(f"Test Data:\n{pf(test_fixture_valid_st_metadata)}")
-        weaver.SoundThreadMetadata.model_validate(test_fixture_valid_st_metadata)
+    def test_valid_voice_metadata(self, test_fixture_valid_voice_metadata):
+        print(f"Test Data:\n{pf(test_fixture_valid_voice_metadata)}")
+        weaver.VoiceMetadata.model_validate(test_fixture_valid_voice_metadata)
 
-    def test_invalid_sound_thread_metadata(self, test_fixture_invalid_st_metadata):
-        print(f"Test Data:\n{pf(test_fixture_invalid_st_metadata)}")
+    def test_invalid_voice_metadata(self, test_fixture_invalid_voice_metadata):
+        print(f"Test Data:\n{pf(test_fixture_invalid_voice_metadata)}")
         with pytest.raises(ValidationError):
-            weaver.SoundThreadMetadata.model_validate(test_fixture_invalid_st_metadata)
+            weaver.VoiceMetadata.model_validate(test_fixture_invalid_voice_metadata)
+
+    def test_valid_user(self, test_fixture_valid_user):
+        print(f"Test Data:\n{pf(test_fixture_valid_user)}")
+        weaver.User.model_validate(test_fixture_valid_user)
+
+    def test_invalid_user(self, test_fixture_invalid_user):
+        print(f"Test Data:\n{pf(test_fixture_invalid_user)}")
+        with pytest.raises(ValidationError):
+            weaver.User.model_validate(test_fixture_invalid_user)
+
+    def test_valid_prompt(self, test_fixture_valid_prompt):
+        print(f"Test Data:\n{pf(test_fixture_valid_prompt)}")
+        weaver.Prompt.model_validate(test_fixture_valid_prompt)
+
+    def test_invalid_prompt(self, test_fixture_invalid_prompt):
+        print(f"Test Data:\n{pf(test_fixture_invalid_prompt)}")
+        with pytest.raises(ValidationError):
+            weaver.Prompt.model_validate(test_fixture_invalid_prompt)

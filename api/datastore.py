@@ -4,6 +4,7 @@ api.datastore.py
 Database storage related CRUD operations.
 TODO: set up actual database lol
 """
+import sqlite3
 import csv
 import datetime
 import logging
@@ -28,7 +29,7 @@ def load_memory_from_storage():
 
         for row in csv_dict_reader:
             key = row.get("key")
-            metadata = weaver.SoundThreadMetadata.model_validate(row)
+            metadata = weaver.VoiceMetadata.model_validate(row)
             _METADATAS[key] = metadata
     LOGGER.warning(f"Successfully loaded memory from storage. Metadatas:\n{_METADATAS}")
 
@@ -37,7 +38,7 @@ def load_storage_from_memory():
     """Update the storage (metadatas.csv file) from in-memory api.datastore.METADATAS_ - for app teardown."""
     with open(THREAD_METADATAS_FILE, "w") as wfile:
         writer = csv.DictWriter(
-            wfile, fieldnames=weaver.SoundThreadMetadata.__fields__.keys()
+            wfile, fieldnames=weaver.VoiceMetadata.__fields__.keys()
         )
         writer.writeheader()
 
@@ -46,10 +47,10 @@ def load_storage_from_memory():
     LOGGER.warning(f"Successfully loaded storage from memory.")
 
 
-def insert_thread(
+def insert_sound(
     key: str,
     audio_content: any,
-    audio_type: str,
+    audio_extension: str,
     dt: datetime.datetime,
     title: Optional[str] = None,
 ) -> str:
@@ -57,7 +58,7 @@ def insert_thread(
     Args:
     key -- the audio index key used as the unique identifier for the static file stored in threads & metadata table.
     audio_content -- the downloaded audio content
-    audio_type -- the downloaded audio file extension
+    audio_extension -- the downloaded audio file extension
     dt -- datetime of the audio content
     title -- optional. Human-readable title set by users.
 
@@ -66,25 +67,25 @@ def insert_thread(
     """
 
     # Save the static
-    with open(str(THREADS_DIR / f"{key}.{audio_type}"), "wb") as file:
+    with open(str(THREADS_DIR / f"{key}.{audio_extension}"), "wb") as file:
         for chunk in audio_content.iter_content(chunk_size=10 * 1024):
             file.write(chunk)
     upsert_metadata(
-        weaver.SoundThreadMetadata(
-            key=key, title=title, audio_type=audio_type, datetime=dt
+        weaver.VoiceMetadata(
+            key=key, title=title, audio_extension=audio_extension, datetime=dt
         )
     )
 
 
-def delete_thread(key: str):
+def delete_sound(key: str):
     """Delete the audio file and its metadata"""
 
 
-def get_thread(key: str):
+def get_sound(key: str):
     """Get the audio file by key index"""
 
 
-def upsert_metadata(metadata: weaver.SoundThreadMetadata):
+def upsert_metadata(metadata: weaver.VoiceMetadata):
     """Insert/Update the metadatas of a sound thread to in-memory"""
     _METADATAS[metadata.key] = metadata
 
