@@ -47,7 +47,7 @@ def load_storage_from_memory():
     LOGGER.warning(f"Successfully loaded storage from memory.")
 
 
-def insert_sound(
+def insert_voice(
     voice_id: str,
     audio_extension: str,
     audio_content: any,
@@ -72,7 +72,7 @@ def insert_sound(
     with open(str(THREADS_DIR / f"{voice_id}.{audio_extension}"), "wb") as file:
         for chunk in audio_content.iter_content(chunk_size=10 * 1024):
             file.write(chunk)
-    upsert_metadata(
+    __insert_metadata(
         weaver.VoiceMetadata(
             voice_id=voice_id,
             audio_extension=audio_extension,
@@ -83,30 +83,41 @@ def insert_sound(
     )
 
 
-def delete_sound(voice_id: str):
-    """Delete the audio file and its metadata"""
+def delete_voice(voice_id: str):
+    """Delete the voice file and its metadata"""
 
 
-def get_sound(voice_id: str):
-    """Get the audio file by voice_id index"""
+def get_voice(voice_id: str) -> Optional[any]:
+    """Get the voice file by voice_id index. Return None if not found."""
+    return None
 
 
-def upsert_metadata(metadata: weaver.VoiceMetadata):
-    """Insert/Update the metadatas of a sound thread to in-memory"""
+def get_voices_by_prompt(prompt_id: str) -> Sequence[any]:
+    """Get voice records by the prompt_id"""
+    return []
+
+
+def get_voices_by_user(user_id: str) -> Sequence[any]:
+    """Get voice records by the user_id"""
+    return []
+
+
+def __insert_metadata(metadata: weaver.VoiceMetadata):
+    """Insert the metadata. Must be done through voice insertion."""
     _METADATAS[metadata.voice_id] = metadata
 
 
-def get_metadata(voice_id: str):
-    """Get metadata by voice_id index"""
+def update_metadata(metadata: weaver.VoiceMetadata):
+    """Update metadata. Indexed by voice_id."""
 
 
-def get_keys_by_title(title: str) -> Sequence[str]:
-    """Get the voice_id index by titles. Since titles can be duplicated, there can be multiple keys mapped to the same title."""
-
-
-def get_user(id: str) -> Optional[weaver.User]:
-    """Get the user by id"""
+def get_metadata(voice_id: str) -> Optional[weaver.VoiceMetadata]:
+    """Get metadata by voice_id index. Return None if not found."""
     return None
+
+
+def __delete_metadata():
+    """Delete metadata. Must be done through voice deletion."""
 
 
 def insert_user(user_id: str, first_name: str, last_name: Optional[str] = None) -> str:
@@ -121,3 +132,34 @@ def insert_user(user_id: str, first_name: str, last_name: Optional[str] = None) 
         )
     )
     return user_id
+
+
+def get_user_by_id(user_id: str) -> Optional[weaver.User]:
+    """Get the user by unique user_id (internal)."""
+    return None
+
+
+def get_user_id_by_username(username: str) -> str:
+    """Get the user_id by unique username (user-friendly)."""
+    # Store a mapping username -> user_id
+    return None
+
+
+def get_user_by_username(username: str) -> Optional[weaver.User]:
+    """Get the user by unqiue username (user-friendly)."""
+
+
+def update_user(user: weaver.User):
+    """Update user. Indexed by user_id."""
+
+
+def __update_username(user_id: str, username: str):
+    """Update username. And the mapping username->user_id."""
+
+
+def delete_user(user_id: str):
+    """Delete user by user_id."""
+
+
+def __delete_username(user_name: str):
+    """Delete the username in the mapping since user is deleted."""

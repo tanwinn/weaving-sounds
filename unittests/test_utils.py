@@ -101,14 +101,14 @@ def test_extract_attachment_file_name_valid():
 )
 def test_handle_user_message_attribute_error(msg_data, mocker):
     # Mock external deps
-    mocker.patch("api.datastore.insert_sound")
+    mocker.patch("api.datastore.insert_voice")
     invalid_msg = facebook.Message.model_validate(msg_data)
     with pytest.raises(AttributeError):
         utils.handle_user_message("undefined_user", invalid_msg)
 
 
 def test_handle_user_message_http_error(mocker):
-    mocker.patch("api.datastore.insert_sound")
+    mocker.patch("api.datastore.insert_voice")
     mocker.patch("requests.get", side_effect=requests.exceptions.ConnectionError())
     message = facebook.Message(
         mid="rainy-days",
@@ -126,7 +126,7 @@ def test_handle_user_message_http_error(mocker):
 
 def test_handle_user_message_filetype_unknown(mocker):
     # Mock external deps
-    mocker.patch("api.datastore.insert_sound")
+    mocker.patch("api.datastore.insert_voice")
     mocker.patch(
         "requests.get",
         return_value=mocker.Mock(
@@ -155,7 +155,7 @@ def test_handle_user_message_filetype_unknown(mocker):
 
 def test_handle_user_message_succeeds(mocker):
     # Mock external deps
-    save_file_action = mocker.patch("api.datastore.insert_sound")
+    save_file_action = mocker.patch("api.datastore.insert_voice")
     mocked_resp = mocker.Mock(
         headers=__make_header(
             {
@@ -190,7 +190,7 @@ def test_handle_user_message_succeeds(mocker):
 
 def test_handle_fb_user_already_registered(mocker):
     # Mock external deps to mimick that the user is already registered
-    mocker.patch("api.datastore.get_user", return_value="user_found")
+    mocker.patch("api.datastore.get_user_by_id", return_value="user_found")
     register_new_user_action = mocker.patch("api.datastore.insert_user")
     assert utils.handle_fb_user("tanwinn") == "fb/tanwinn"
     register_new_user_action.assert_not_called()  # since user is already in the system, we didn't register new one
@@ -198,7 +198,7 @@ def test_handle_fb_user_already_registered(mocker):
 
 def test_handle_fb_user_new_http_error(mocker):
     # Mock external deps to mimick that the user is new
-    mocker.patch("api.datastore.get_user", return_value=None)
+    mocker.patch("api.datastore.get_user_by_id", return_value=None)
     # http gets connection error
     mocker.patch("requests.get", side_effect=requests.exceptions.ConnectionError())
     with pytest.raises(requests.exceptions.HTTPError):
@@ -209,7 +209,7 @@ def test_handle_fb_user_new_http_error(mocker):
 def test_handle_fb_user_new_registered_successfully(mocker):
     # Mock external deps
     # mimick that the user is new
-    mocker.patch("api.datastore.get_user", return_value=None)
+    mocker.patch("api.datastore.get_user_by_id", return_value=None)
 
     # mock http gets
     # todo: config important env var using test env vars instead of mocking the os.environ

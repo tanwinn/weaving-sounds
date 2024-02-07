@@ -27,7 +27,7 @@ def handle_fb_user(id: Union[str, int]) -> str:
     """Get the user's Facebook identity"""
     user_id = f"fb/{id}"
     # if user not registered, get user basic info and register to the system
-    if datastore.get_user(user_id) is None:
+    if datastore.get_user_by_id(user_id) is None:
         LOGGER.info("User not found in the system! Registering new user...")
         try:
             # According to Meta's doc: https://developers.facebook.com/docs/messenger-platform/identity/user-profile/#available-profile-fields
@@ -123,7 +123,7 @@ def __extract_and_store_audio_from_url(
         raise AttributeError("Cannot detech the attachment's audio file extension.")
 
     # Save the static file to threads
-    datastore.insert_sound(
+    datastore.insert_voice(
         voice_id=voice_id,
         audio_content=response,
         dt=dt,
