@@ -231,3 +231,31 @@ def test_handle_fb_user_new_registered_successfully(mocker):
     register_new_user_action.assert_called_once_with(
         f"fb/{id}", first_name="Takenobu", last_name="Igarashi"
     )
+
+
+@responses.activate
+def test_handle_fb_user_new_registered_no_name_successfully(mocker):
+    # Mock external deps
+    # mimick that the user is new
+    mocker.patch("api.datastore.get_user_by_id", return_value=None)
+
+    # mock http gets
+    # todo: config important env var using test env vars instead of mocking the os.environ
+    access_token = "access+token+test"
+    mocker.patch("os.environ.get", return_value=access_token)
+
+    id = 123456789
+    responses.add(
+        responses.GET,
+        re.compile("https://graph.facebook.com/v19.0/*"),
+        json={"id": id},
+        status=200,
+    )
+
+    register_new_user_action = mocker.patch("api.datastore.insert_user")
+
+    assert utils.handle_fb_user(id) == f"fb/{id}"
+
+    register_new_user_action.assert_called_once_with(
+        f"fb/{id}", first_name="undefined", last_name=None
+    )
