@@ -78,12 +78,11 @@ async def messenger_post(data: facebook.Event) -> str:
             LOGGER.warning(f"userID: {message.sender.id}")
             LOGGER.warning(f"Message object: \n{pf(message.message.model_dump())}")
             try:
+                # Retrieve the public Facebook profile of the sender to store in system
                 user_id = utils.handle_fb_user(message.sender.id)
                 _ = utils.handle_user_message(user_id, message.message)
             except Exception as e:  # todo: handling exceptions better
                 LOGGER.warning(f"Error: {e}")
-            # We retrieve the Facebook user ID of the sender
-            # fb_id = message.sender.id
     return "Success!"
 
 

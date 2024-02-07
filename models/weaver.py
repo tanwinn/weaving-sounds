@@ -22,7 +22,7 @@ class VoiceMetadata(BaseModel):
 
 
 class User(BaseModel):
-    """Users of the website. Owners of the voice records. 
+    """Users of the website. Owners of the voice records.
     Can be from multiple platforms, for now only serves FB messenger."""
 
     user_id: str  # unique id stored. Format: <platform>/<id> ==> fb/7123882112
