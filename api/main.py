@@ -8,8 +8,8 @@ from pathlib import Path
 from pprint import pformat as pf
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from api import datastore, utils
 from models import facebook
@@ -18,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 
 # A user secret to verify webhook get request
 FB_VERIFY_TOKEN = os.environ.get("FB_VERIFY_TOKEN", "default")
-PRAVICY_POLICY_PATH = Path(__file__).joinpath("..").resolve() / "pp.html"
+PRIVACY_POLICY_PATH = Path(__file__).joinpath("..").resolve() / "pp.html"
 
 
 @asynccontextmanager
@@ -78,8 +78,9 @@ async def messenger_post(data: facebook.Event) -> str:
             LOGGER.warning(f"userID: {message.sender.id}")
             LOGGER.warning(f"Message object: \n{pf(message.message.model_dump())}")
             try:
-                _ = utils.handle_user_message(message.message)
-            except Exception as e:
+                user_id = utils.handle_fb_user(message.sender.id)
+                _ = utils.handle_user_message(user_id, message.message)
+            except Exception as e:  # todo: handling exceptions better
                 LOGGER.warning(f"Error: {e}")
             # We retrieve the Facebook user ID of the sender
             # fb_id = message.sender.id
@@ -88,15 +89,18 @@ async def messenger_post(data: facebook.Event) -> str:
 
 @APP.get("/privacy-policy", response_class=HTMLResponse)
 def get_privacy_policy():
-    with open(PRAVICY_POLICY_PATH) as rfile:
+    """
+    Privacy policy page. Needed according to Meta's app policy at https://www.termsfeed.com/blog/privacy-policy-url/
+    """
+    with open(PRIVACY_POLICY_PATH) as rfile:
         return rfile.read()
 
 
 @APP.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-
-    exc_str = f'{exc}'.replace('\n', ' ').replace('   ', ' ')
+    """Handles pydantic model validation error"""
+    exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
     # or logger.error(f'{exc}')
     LOGGER.error(request, exc_str)
-    content = {'status_code': 10422, 'message': exc_str, 'data': None}
+    content = {"status_code": 10422, "message": exc_str, "data": None}
     return JSONResponse(content=content, status_code=422)

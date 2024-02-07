@@ -1,5 +1,6 @@
 valid:
-- username: tanwinn
+- user_id: fb/713618923
+  username: tanwinn
   first_name: Thanh
   last_name: Nguyen
   voice_set:
@@ -8,14 +9,19 @@ valid:
   prompt_set:
   - 1
   - 2
-- username: tanwinn
+- user_id: fb/713618923
+  username: tanwinn
   first_name: Thanh
   last_name: Nguyen
   voice_set: []
   prompt_set: []
-- username: tanwinn
+- user_id: fb/713618923
+  username: tanwinn
   first_name: Thanh
   last_name: Nguyen
+- user_id: fb/713618923
+  username: tanwinn
+  first_name: Thanh
 invalid:
 - first_name: Thanh
   last_name: Nguyen
@@ -23,7 +29,8 @@ invalid:
   - voice_record_12.wav
   prompt_set:
   - 1
-- username: tanwinn
+- user_id: fb/713618923
+  username: tanwinn
   last_name: Nguyen
   voice_set:
   - voice_record_23.wav

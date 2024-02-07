@@ -3,12 +3,14 @@ unittests.test_utils.py
 ~~~~~~~~~~~~~~~~~~~~~~~
 Unittest for api.utils models
 """
+import re
 from collections.abc import Mapping
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import pytest
 import requests
+import responses
 
 from api import datastore, utils
 from models import facebook
@@ -102,7 +104,7 @@ def test_handle_user_message_attribute_error(msg_data, mocker):
     mocker.patch("api.datastore.insert_sound")
     invalid_msg = facebook.Message.model_validate(msg_data)
     with pytest.raises(AttributeError):
-        utils.handle_user_message(invalid_msg)
+        utils.handle_user_message("undefined_user", invalid_msg)
 
 
 def test_handle_user_message_http_error(mocker):
@@ -119,7 +121,7 @@ def test_handle_user_message_http_error(mocker):
     )
 
     with pytest.raises(requests.exceptions.HTTPError):
-        utils.handle_user_message(message)
+        utils.handle_user_message("undefined_user", message)
 
 
 def test_handle_user_message_filetype_unknown(mocker):
@@ -148,7 +150,7 @@ def test_handle_user_message_filetype_unknown(mocker):
                 )
             ],
         )
-        utils.handle_user_message(message)
+        utils.handle_user_message("undefined_user", message)
 
 
 def test_handle_user_message_succeeds(mocker):
@@ -174,12 +176,58 @@ def test_handle_user_message_succeeds(mocker):
             )
         ],
     )
-    utils.handle_user_message(message)
+    utils.handle_user_message("fb/tanwinn", message)
 
     save_file_action.assert_called_with(
-        key="kajhdisx--0",
+        voice_id="kajhdisx-0",
         audio_content=mocked_resp,
         dt=__from_ts("2024-01-03 19:30:00", "America/Los_Angeles"),
-        title="oatmilk.wav",
+        user_id="fb/tanwinn",
         audio_extension="wav",
+        prompt_id=1,
+    )
+
+
+def test_handle_fb_user_already_registered(mocker):
+    # Mock external deps to mimick that the user is already registered
+    mocker.patch("api.datastore.get_user", return_value="user_found")
+    register_new_user_action = mocker.patch("api.datastore.insert_user")
+    assert utils.handle_fb_user("tanwinn") == "fb/tanwinn"
+    register_new_user_action.assert_not_called()  # since user is already in the system, we didn't register new one
+
+
+def test_handle_fb_user_new_http_error(mocker):
+    # Mock external deps to mimick that the user is new
+    mocker.patch("api.datastore.get_user", return_value=None)
+    # http gets connection error
+    mocker.patch("requests.get", side_effect=requests.exceptions.ConnectionError())
+    with pytest.raises(requests.exceptions.HTTPError):
+        utils.handle_fb_user("tanwinn")
+
+
+@responses.activate
+def test_handle_fb_user_new_registered_successfully(mocker):
+    # Mock external deps
+    # mimick that the user is new
+    mocker.patch("api.datastore.get_user", return_value=None)
+
+    # mock http gets
+    # todo: config important env var using test env vars instead of mocking the os.environ
+    access_token = "access+token+test"
+    mocker.patch("os.environ.get", return_value=access_token)
+
+    id = 123456789
+    responses.add(
+        responses.GET,
+        re.compile("https://graph.facebook.com/v19.0/*"),
+        json={"first_name": "Takenobu", "last_name": "Igarashi", "id": id},
+        status=200,
+    )
+
+    register_new_user_action = mocker.patch("api.datastore.insert_user")
+
+    assert utils.handle_fb_user(id) == f"fb/{id}"
+
+    register_new_user_action.assert_called_once_with(
+        f"fb/{id}", first_name="Takenobu", last_name="Igarashi"
     )

@@ -8,9 +8,10 @@ Utilities used by api.
 
 import logging
 import mimetypes
+import os
 from collections.abc import Mapping
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import requests
@@ -19,16 +20,40 @@ from api import datastore
 from models import facebook
 
 LOGGER = logging.getLogger(__name__)
+FB_PAGE_TOKEN = os.environ.get("FB_PAGE_TOKEN", "default")
 
 
-def handle_user_message(message: facebook.Message):
+def handle_fb_user(id: Union[str, int]) -> str:
+    """Get the user's Facebook identity"""
+    user_id = f"fb/{id}"
+    # if user not registered, get user basic info and register to the system
+    if datastore.get_user(user_id) is None:
+        LOGGER.info("User not found in the system! Registering new user...")
+        try:
+            # According to Meta's doc: https://developers.facebook.com/docs/messenger-platform/identity/user-profile/#available-profile-fields
+            response = requests.get(
+                f"https://graph.facebook.com/v19.0/{id}?access_token={FB_PAGE_TOKEN}"
+            )
+            response.raise_for_status()
+            response = response.json()
+            datastore.insert_user(
+                user_id,
+                first_name=response.get("first_name", "undefined"),
+                last_name=response.get("last_name", None),
+            )
+        except requests.exceptions.RequestException as e:
+            raise requests.exceptions.HTTPError(e)
+    return user_id
+
+
+def handle_user_message(user_id: str, message: facebook.Message):
     """If the user message's attachments are audios, archive them."""
     if not dict(message).get("attachments"):
         raise AttributeError("user message doesn't have attachments")
 
     for i, attachment in enumerate(message.attachments):
         __extract_and_store_audio_from_url(
-            attachment=attachment, key=f"{message.mid}--{i}"
+            user_id=user_id, attachment=attachment, voice_id=f"{message.mid}-{i}"
         )
 
 
@@ -72,7 +97,7 @@ def extract_attachment_filename(header: Mapping) -> Optional[str]:
 
 
 def __extract_and_store_audio_from_url(
-    attachment: facebook.Attachment, key: str
+    user_id: str, attachment: facebook.Attachment, voice_id: str
 ) -> str:
     """Download the audio from url to ./records and store its metadata to datastore's 'METADATAS table."""
     # Ensure that the attachment is an audio type and has a downloadable url
@@ -99,9 +124,10 @@ def __extract_and_store_audio_from_url(
 
     # Save the static file to threads
     datastore.insert_sound(
-        key=key,
+        voice_id=voice_id,
         audio_content=response,
         dt=dt,
-        title=filename,
         audio_extension=filetype.strip("."),
+        prompt_id=1,  # todo:
+        user_id=user_id,
     )
