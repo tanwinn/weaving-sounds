@@ -23,16 +23,16 @@ LOGGER = logging.getLogger(__name__)
 FB_PAGE_TOKEN = os.environ.get("FB_PAGE_TOKEN", "default")
 
 
-def handle_fb_user(id: Union[str, int]) -> str:
+def handle_fb_user(sender_id: Union[str, int]) -> str:
     """Get the user's Facebook identity"""
-    user_id = f"fb/{id}"
+    user_id = f"fb/{sender_id}"
     # if user not registered, get user basic info and register to the system
     if datastore.get_user_by_id(user_id) is None:
         LOGGER.info("User not found in the system! Registering new user...")
         try:
             # According to Meta's doc: https://developers.facebook.com/docs/messenger-platform/identity/user-profile/#available-profile-fields
             response = requests.get(
-                f"https://graph.facebook.com/v19.0/{id}?access_token={FB_PAGE_TOKEN}"
+                f"https://graph.facebook.com/v19.0/{sender_id}?access_token={FB_PAGE_TOKEN}"
             )
             response.raise_for_status()
             response = response.json()
@@ -124,7 +124,7 @@ def __extract_and_store_audio_from_url(
 
     # Save the static file to threads
     datastore.insert_voice(
-        voice_id=voice_id,
+        id=voice_id,
         audio_content=response,
         dt=dt,
         audio_extension=filetype.strip("."),

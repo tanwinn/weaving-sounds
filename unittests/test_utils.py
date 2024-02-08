@@ -179,7 +179,7 @@ def test_handle_user_message_succeeds(mocker):
     utils.handle_user_message("fb/tanwinn", message)
 
     save_file_action.assert_called_with(
-        voice_id="kajhdisx-0",
+        id="kajhdisx-0",
         audio_content=mocked_resp,
         dt=__from_ts("2024-01-03 19:30:00", "America/Los_Angeles"),
         user_id="fb/tanwinn",

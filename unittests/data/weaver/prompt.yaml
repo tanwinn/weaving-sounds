@@ -1,5 +1,5 @@
 valid:
-- prompt_id: 1
+- _id: 1
   begins: !!timestamp 2024-01-06 23:59:59.000
   ends: !!timestamp 2024-01-13 00:00:00.000
   text: tell me about a book or article you just read recently?
@@ -9,28 +9,28 @@ valid:
   user_set:
   - tanwinn
   - caro
-- prompt_id: 2
+- _id: 2
   begins: !!timestamp 2024-01-06 23:59:59.000
   ends: !!timestamp 2024-01-13 00:00:00.000
   text: tell me about a book or article you just read recently?
   voice_set: []
   user_set: []
 invalid:
-- prompt_id: 1
+- _id: 1
   ends: !!timestamp 2024-01-13 00:00:00.000
   text: tell me about a book or article you just read recently?
   voice_set:
   - voice_record_13.wav
   user_set:
   - caro
-- prompt_id: 2
+- _id: 2
   begins: !!timestamp 2024-01-06 23:59:59.000
   text: tell me about a book or article you just read recently?
   voice_set:
   - voice_record_13.wav
   user_set:
   - caro
-- prompt_id: 2
+- _id: 2
   begins: !!timestamp 2024-01-06 23:59:59.999
   ends: !!timestamp 2024-01-13 00:00:00.000
   voice_set:

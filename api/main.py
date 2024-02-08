@@ -24,9 +24,8 @@ PRIVACY_POLICY_PATH = Path(__file__).joinpath("..").resolve() / "pp.html"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown logic for the API."""
-    datastore.load_memory_from_storage()
     yield
-    datastore.load_storage_from_memory()
+    # todo: shutdown Mongo client
 
 
 APP = FastAPI(
@@ -79,8 +78,8 @@ async def messenger_post(data: facebook.Event) -> str:
             LOGGER.warning(f"Message object: \n{pf(message.message.model_dump())}")
             try:
                 # Retrieve the public Facebook profile of the sender to store in system
-                user_id = utils.handle_fb_user(message.sender.id)
-                _ = utils.handle_user_message(user_id, message.message)
+                id = utils.handle_fb_user(message.sender.id)
+                _ = utils.handle_user_message(id, message.message)
             except Exception as e:  # todo: handling exceptions better
                 LOGGER.warning(f"Error: {e}")
     return "Success!"
