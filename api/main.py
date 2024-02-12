@@ -25,7 +25,8 @@ PRIVACY_POLICY_PATH = Path(__file__).joinpath("..").resolve() / "pp.html"
 async def lifespan(app: FastAPI):
     """Startup and shutdown logic for the API."""
     yield
-    # todo: shutdown Mongo client
+    # shutdown Database client
+    datastore.shutdown()
 
 
 APP = FastAPI(

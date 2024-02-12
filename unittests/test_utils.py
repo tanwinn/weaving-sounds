@@ -6,6 +6,7 @@ Unittest for api.utils models
 import re
 from collections.abc import Mapping
 from datetime import datetime
+from typing import Optional
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -16,9 +17,9 @@ from api import datastore, utils
 from models import facebook
 
 
-def __from_ts(ts: str, timezone: str) -> datetime:
-    """Convert timestamp with the format `2024-01-03 19:30:00` to specified timezone."""
-    return datetime.strptime(ts, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo(timezone))
+def __from_ts(ts: str, tz: Optional[str] = "UTC") -> datetime:
+    """Convert timestamp with the format `2024-01-03 19:30:00` to datetime object with UTC timezone."""
+    return datetime.strptime(ts, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo(tz))
 
 
 def __make_header(header_data: Mapping) -> requests.structures.CaseInsensitiveDict:
@@ -29,36 +30,21 @@ def __make_header(header_data: Mapping) -> requests.structures.CaseInsensitiveDi
 @pytest.mark.parametrize(
     "header_data,expected_ts",
     [
-        ({"Date": "Thu, 04 Jan 2024 03:30:00 GMT"}, "2024-01-03 19:30:00"),
-        ({"last-modified": "Thu, 04 Jan 2024 16:00:00 GMT"}, "2024-01-04 08:00:00"),
+        ({"Date": "Thu, 04 Jan 2024 03:30:00 GMT"}, "2024-01-04 03:30:00"),
+        ({"last-modified": "Thu, 04 Jan 2024 16:00:00 GMT"}, "2024-01-04 16:00:00"),
     ],
 )
 def test_extract_header_datetime_default_tz(header_data: Mapping, expected_ts: str):
     header = __make_header(header_data)
-    expected = __from_ts(expected_ts, "America/Los_Angeles")
+    expected = __from_ts(expected_ts)
     assert utils.extract_header_datetime(header) == expected
-
-
-def test_extract_header_datetime_different_tz():
-    header = __make_header({"date": "Thu, 04 Jan 2024 03:30:00 GMT"})
-    assert utils.extract_header_datetime(header, "America/New_York") == __from_ts(
-        "2024-01-03 22:30:00", "America/New_York"
-    )
 
 
 def test_extract_header_datetime_invalid_header():
     header = __make_header({"header_no_date": "delilmama"})
     # Expecting now time, return without problem and with a timezone
-    now = utils.extract_header_datetime(header, "America/Los_Angeles")
-    assert now.tzinfo.key == "America/Los_Angeles"
-
-
-def test_extract_header_datetime_invalid_timezone():
-    header = __make_header({"Date": "Thu, 04 Jan 2024 03:30:00 GMT"})
-    # Timezone input string is invalid, so revert back to default timezone PST
-    assert utils.extract_header_datetime(header, "invalid/timezone") == __from_ts(
-        "2024-01-03 19:30:00", "America/Los_Angeles"
-    )
+    now = utils.extract_header_datetime(header)
+    assert now.tzinfo.key == "UTC"
 
 
 @pytest.mark.parametrize(
@@ -165,6 +151,7 @@ def test_handle_user_message_succeeds(mocker):
             }
         ),
         status_code=200,
+        content=b"blub bluuub blub",
     )
     mocker.patch("requests.get", return_value=mocked_resp)
     message = facebook.Message(
@@ -180,9 +167,9 @@ def test_handle_user_message_succeeds(mocker):
 
     save_file_action.assert_called_with(
         id="kajhdisx-0",
-        audio_content=mocked_resp,
-        dt=__from_ts("2024-01-03 19:30:00", "America/Los_Angeles"),
-        user_id="fb/tanwinn",
+        audio_content=b"blub bluuub blub",
+        datetime=__from_ts("2024-01-04 03:30:00"),
+        username="fb/tanwinn",
         audio_extension="wav",
         prompt_id=1,
     )
@@ -259,3 +246,12 @@ def test_handle_fb_user_new_registered_no_name_successfully(mocker):
     register_new_user_action.assert_called_once_with(
         f"fb/{id}", first_name="undefined", last_name=None
     )
+
+
+def test_datetime_from_timestamp():
+    assert utils.datetime_from_ts("2024-01-04 03:30:00") == __from_ts(
+        "2024-01-04 03:30:00"
+    )
+    assert utils.datetime_from_ts(
+        "2024-01-04 03:30:00", "America/Los_Angeles"
+    ) == __from_ts("2024-01-04 03:30:00", "America/Los_Angeles")

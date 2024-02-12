@@ -1,8 +1,8 @@
 *.pyc
 
 # Data storage
-threads/*
-!threads/__init__.py
+voices/*
+!voices/__init__.py
 
 # Packages
 *.egg

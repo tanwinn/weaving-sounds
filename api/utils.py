@@ -57,34 +57,39 @@ def handle_user_message(user_id: str, message: facebook.Message):
         )
 
 
-def extract_header_datetime(
-    header: Mapping, timezone: str = "America/Los_Angeles"
-) -> datetime:
+def extract_header_datetime(header: Mapping) -> datetime:
     """Extract datetime Fri, 01 Jan 1999 00:00:00 GMT
     Args:
     header -- The http response header json
-    timezone -- Optional - The timezone converting to. Default is America/Los_Angeles timezone.
 
     Returns:
-    The converted datetime representing as a datetime. If header doesn't have a datetime, return now.
+    The datetime object in UTC. If header doesn't have a datetime, return now.
     """
     header_dt = header.get("date", None) or header.get("last-modified", None)
 
+    if header_dt:  # Format "Fri, 01 Jan 1999 00:00:00 GMT"
+        return datetime.strptime(header_dt, "%a, %d %b %Y %H:%M:%S %Z").replace(
+            tzinfo=ZoneInfo("UTC")
+        )
+
+    # If no header datetime found, get current time
+    return datetime.now(tz=ZoneInfo("UTC"))
+
+
+def utc_to_(dt: datetime, timezone: str = "America/Los_Angeles") -> datetime:
+    """Converted datetime in UTC to specified timezone."""
     # Trying to get the zoneinfo, if none found, reverted back to default tz in PST
     try:
         tz_info = ZoneInfo(timezone)
     except ZoneInfoNotFoundError:
         tz_info = ZoneInfo("America/Los_Angeles")
 
-    if header_dt:  # Format "Fri, 01 Jan 1999 00:00:00 GMT"
-        return (
-            datetime.strptime(header_dt, "%a, %d %b %Y %H:%M:%S %Z")
-            .replace(tzinfo=ZoneInfo("UTC"))
-            .astimezone(tz_info)
-        )
+    return dt.astimezone(tz_info)
 
-    # If no header datetime found, get current time
-    return datetime.now(tz=tz_info)
+
+def datetime_from_ts(ts: str, timezone: str = "UTC") -> datetime:
+    """Convert timestamp with timezone to datetime object"""
+    return datetime.strptime(ts, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo(timezone))
 
 
 def extract_attachment_filename(header: Mapping) -> Optional[str]:
@@ -122,12 +127,12 @@ def __extract_and_store_audio_from_url(
     if not filetype:  # if we cannot guess the file type (extension), raise error
         raise AttributeError("Cannot detech the attachment's audio file extension.")
 
-    # Save the static file to threads
+    # Save the static file to voices
     datastore.insert_voice(
         id=voice_id,
-        audio_content=response,
-        dt=dt,
+        audio_content=response.content,
+        datetime=dt,
         audio_extension=filetype.strip("."),
         prompt_id=1,  # todo:
-        user_id=user_id,
+        username=user_id,
     )
