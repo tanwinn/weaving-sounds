@@ -74,6 +74,13 @@ This will generate a forwarding url like `forwarding-url.ngrok-free.app`
 
 The app can now be tested by test users (if in Development) or the public (if Published).
 
+## Set up Mongo Database locally
+- Download the community version [here](https://www.mongodb.com/try/download/community)
+- More instructions at [official MongoDBdocs](https://www.mongodb.com/docs/manual/tutorial/manage-mongodb-processes/)
+```
+cd weaving-sounds
+mongod --dbpath voices --port 27017
+```
 ## Deploy the app to GCloud
 TBD
 

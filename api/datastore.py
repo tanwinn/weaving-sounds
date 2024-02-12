@@ -42,12 +42,18 @@ def __database() -> pymongo.database.Database:
     """Get the `sounds` database"""
     if "db_client" not in GLOBAL:
         LOGGER.info("No mongo client found. Creating a new one...")
-        client = pymongo.MongoClient(
-            host=MONGO_CONN_STR, connectTimeoutMS=3000, serverSelectionTimeoutMS=3500
-        )
-        client.server_info()  # check server liveness
-        GLOBAL.update(db_client=client)
+        startup()
     return GLOBAL.get("db_client").sounds
+
+
+def startup():
+    """Startup the mongo client"""
+    LOGGER.info("Initializing the mongo client connection")
+    client = pymongo.MongoClient(
+        host=MONGO_CONN_STR, connectTimeoutMS=3000, serverSelectionTimeoutMS=3500
+    )
+    client.server_info()  # check server liveness
+    GLOBAL.update(db_client=client)
 
 
 def shutdown():

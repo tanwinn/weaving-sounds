@@ -24,6 +24,8 @@ PRIVACY_POLICY_PATH = Path(__file__).joinpath("..").resolve() / "pp.html"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown logic for the API."""
+    # startup Database client
+    datastore.startup()
     yield
     # shutdown Database client
     datastore.shutdown()

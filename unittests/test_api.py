@@ -15,6 +15,15 @@ def test_client(api_client_fixture):
 
 def test_lifespan(api_client_fixture, mocker):
     """Test app's startup and shutdown lifespan events."""
+    on_startup = mocker.patch("api.datastore.startup")
+    on_shutdown = mocker.patch("api.datastore.shutdown")
+
+    with api_client_fixture:
+        # After startup
+        on_startup.assert_called_once()
+
+    # After shutdown
+    on_shutdown.assert_called_once()
 
 
 @pytest.mark.parametrize(

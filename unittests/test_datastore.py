@@ -236,8 +236,8 @@ def test_insert_prompt_succeeds_second_prompt():
 def test_new_db(mocker):
     datastore.shutdown()
     assert "db_client" not in datastore.GLOBAL
-    
-    mocker.patch("pymongo.MongoClient", return_value = mocker.Mock(specs=["server_info"]))
+
+    mocker.patch("pymongo.MongoClient", return_value=mocker.Mock(specs=["server_info"]))
     datastore.__database()
 
     assert "db_client" in datastore.GLOBAL
