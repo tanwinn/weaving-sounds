@@ -21,6 +21,7 @@ from models import facebook
 
 LOGGER = logging.getLogger(__name__)
 FB_PAGE_TOKEN = os.environ.get("FB_PAGE_TOKEN", "default")
+FB_GRAPH_API = "https://graph.facebook.com/me/messages?"
 
 
 def handle_fb_user(sender_id: Union[str, int]) -> str:
@@ -49,15 +50,35 @@ def handle_fb_user(sender_id: Union[str, int]) -> str:
 def handle_user_message(user_id: str, message: facebook.Message):
     """If the user message's attachments are audios, archive them."""
     if not dict(message).get("attachments"):
-        raise AttributeError("user message doesn't have attachments")
+        raise AttributeError("User message doesn't have attachments.")
 
-    for i, attachment in enumerate(message.attachments):
-        __extract_and_store_audio_from_url(
-            user_id=user_id, attachment=attachment, voice_id=f"{message.mid}-{i}"
+    if len(message.attachments) > 1:
+        raise AttributeError(
+            "Too many attachements at once. Please upload one at a time."
         )
 
+    __extract_and_store_audio_from_url(
+        user_id=user_id, attachment=message.attachments[0], voice_id=f"{message.mid}"
+    )
+    LOGGER.info("Saved audio & metadata: {message.mid}")
+    return f"Saved audio files with ID {message.mid}"
 
-def extract_header_datetime(header: Mapping) -> datetime:
+
+def reply_to(user_id: str, text: str):
+    """
+    Compose a message/reply to `user_id` with content of `text`
+    and send it to Messenger through POST call to FB_GRAPH_API
+    """
+    data = facebook.Response(
+        recipient=facebook.User(id=user_id),
+        message=facebook.ResponseMessage(text=text),
+    ).model_dump()
+    LOGGER.info(f"Prepping call to facebook with data={pf(data)}")
+    response = requests.post(f"{FB_GRAPH_API}access_token={FB_PAGE_TOKEN}", json=data)
+    response.raise_for_status()
+
+
+def __extract_header_datetime(header: Mapping) -> datetime:
     """Extract datetime Fri, 01 Jan 1999 00:00:00 GMT
     Args:
     header -- The http response header json
@@ -92,7 +113,7 @@ def datetime_from_ts(ts: str, timezone: str = "UTC") -> datetime:
     return datetime.strptime(ts, "%Y-%m-%d %H:%M:%S").replace(tzinfo=ZoneInfo(timezone))
 
 
-def extract_attachment_filename(header: Mapping) -> Optional[str]:
+def __extract_attachment_filename(header: Mapping) -> Optional[str]:
     """Extract the filename of the attachement, specifically in Content-Disposition. Return None if not found."""
     # According to https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition, Content-Disposition
     # syntax for attachment type is either `attachment; filename=<name>` or `attachment`. If the attachment doesn't
@@ -121,8 +142,8 @@ def __extract_and_store_audio_from_url(
 
     # Extract neccesary metadata for weaver.VoiceMetadata
     header = response.headers
-    dt = extract_header_datetime(header)
-    filename = extract_attachment_filename(header)
+    dt = __extract_header_datetime(header)
+    filename = __extract_attachment_filename(header)
     filetype = mimetypes.guess_extension(header.get("Content-Type"))
     if not filetype:  # if we cannot guess the file type (extension), raise error
         raise AttributeError("Cannot detech the attachment's audio file extension.")

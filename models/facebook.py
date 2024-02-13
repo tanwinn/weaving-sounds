@@ -78,3 +78,16 @@ class Event(BaseModel):
         if value == "page":
             return value
         raise ValueError("object must be page")
+
+
+class ResponseMessage(BaseModel):
+    """ResponseMessage of Response model"""
+
+    text: str
+
+
+class Response(BaseModel):
+    """Chatbot's Response model back to the Facebook sending user"""
+
+    message: ResponseMessage
+    recipient: User

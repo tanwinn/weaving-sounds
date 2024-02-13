@@ -13,6 +13,12 @@ def test_client(api_client_fixture):
     assert api_client_fixture
 
 
+@pytest.fixture(autouse=True)
+def _auto_mock_datastore(mocker):
+    mocker.patch("api.datastore.startup")
+    mocker.patch("api.datastore.shutdown")
+
+
 def test_lifespan(api_client_fixture, mocker):
     """Test app's startup and shutdown lifespan events."""
     on_startup = mocker.patch("api.datastore.startup")
@@ -65,6 +71,8 @@ def test_get_privacy_policy(api_client_fixture):
 def test_post_message_200_resp_valid_data(
     api_client_fixture, test_fixture_valid_event, mocker
 ):
+    mocker.patch("api.utils.handle_fb_user", return_value="fb/12345")
     mocker.patch("api.utils.handle_user_message", return_value="mocked response")
+    mocker.patch("api.utils.reply_to")
     resp = api_client_fixture.post("/webhook", json=test_fixture_valid_event)
     assert resp.status_code == 200

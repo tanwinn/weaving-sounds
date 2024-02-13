@@ -37,13 +37,13 @@ def __make_header(header_data: Mapping) -> requests.structures.CaseInsensitiveDi
 def test_extract_header_datetime_default_tz(header_data: Mapping, expected_ts: str):
     header = __make_header(header_data)
     expected = __from_ts(expected_ts)
-    assert utils.extract_header_datetime(header) == expected
+    assert utils.__extract_header_datetime(header) == expected
 
 
 def test_extract_header_datetime_invalid_header():
     header = __make_header({"header_no_date": "delilmama"})
     # Expecting now time, return without problem and with a timezone
-    now = utils.extract_header_datetime(header)
+    now = utils.__extract_header_datetime(header)
     assert now.tzinfo.key == "UTC"
 
 
@@ -57,12 +57,12 @@ def test_extract_header_datetime_invalid_header():
     ],
 )
 def test_extract_attachment_filename_not_found(header_data: Mapping):
-    assert utils.extract_attachment_filename(__make_header(header_data)) is None
+    assert utils.__extract_attachment_filename(__make_header(header_data)) is None
 
 
 def test_extract_attachment_file_name_valid():
     header = __make_header({"Content-Disposition": "attachment; filename=oatmilk.wav"})
-    utils.extract_attachment_filename(header) == "oatmilk.wav"
+    utils.__extract_attachment_filename(header) == "oatmilk.wav"
 
 
 @pytest.mark.parametrize(
@@ -166,7 +166,7 @@ def test_handle_user_message_succeeds(mocker):
     utils.handle_user_message("fb/tanwinn", message)
 
     save_file_action.assert_called_with(
-        id="kajhdisx-0",
+        id="kajhdisx",
         audio_content=b"blub bluuub blub",
         datetime=__from_ts("2024-01-04 03:30:00"),
         username="fb/tanwinn",

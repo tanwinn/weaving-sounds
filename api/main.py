@@ -72,20 +72,30 @@ async def messenger_post(data: facebook.Event) -> str:
     """
     Handler for webhook Facebook Event (currently for postback and messages)
     """
-    LOGGER.warning(f"Data event:\n {pf(data.model_dump())}")
+    LOGGER.info(f"Data event:\n {pf(data.model_dump())}")
     for entry in data.entry:
         messages = entry.messaging
+        answer = ""
+        id = None
         if messages[0]:
             message = messages[0]
-            LOGGER.warning(f"userID: {message.sender.id}")
-            LOGGER.warning(f"Message object: \n{pf(message.message.model_dump())}")
+            LOGGER.info(f"userID: {message.sender.id}")
+            LOGGER.info(f"Message object: \n{pf(message.message.model_dump())}")
             try:
                 # Retrieve the public Facebook profile of the sender to store in system
                 id = utils.handle_fb_user(message.sender.id)
-                _ = utils.handle_user_message(id, message.message)
+                answer = utils.handle_user_message(id, message.message)
             except Exception as e:  # todo: handling exceptions better
-                LOGGER.warning(f"Error: {e}")
-    return "Success!"
+                if id:
+                    answer = (
+                        f"{e} Facebook User registered with userid {id} on website."
+                    )
+                else:
+                    answer = f"ERROR! {e}"
+                LOGGER.error(f"ERROR:\n {e}")
+
+        utils.reply_to(message.sender.id, answer)
+        return "Success!"
 
 
 @APP.get("/privacy-policy", response_class=HTMLResponse)
@@ -105,3 +115,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     LOGGER.error(request, exc_str)
     content = {"status_code": 10422, "message": exc_str, "data": None}
     return JSONResponse(content=content, status_code=422)
+
+
+@APP.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    """Handles general error"""
+    exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
+    # or logger.error(f'{exc}')
+    LOGGER.error(request, exc_str)
