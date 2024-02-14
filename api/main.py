@@ -3,7 +3,7 @@ api.main.py
 """
 import logging
 import os
-import pickle
+from collections.abc import Sequence
 from contextlib import asynccontextmanager
 from pathlib import Path
 from pprint import pformat as pf
@@ -11,15 +11,17 @@ from pprint import pformat as pf
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
+from starlette.responses import PlainTextResponse
 
 from api import datastore, utils
-from models import facebook
+from models import exceptions, facebook, weaver
 
 LOGGER = logging.getLogger(__name__)
 
 # A user secret to verify webhook get request
 FB_VERIFY_TOKEN = os.environ.get("FB_VERIFY_TOKEN", "default")
 PRIVACY_POLICY_PATH = Path(__file__).joinpath("..").resolve() / "pp.html"
+SECRET = os.environ.get("SECRET", None)
 
 
 @asynccontextmanager
@@ -27,8 +29,8 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown logic for the API."""
     # startup Database client
     datastore.startup()
-    datastore.clearall()
-    datastore.clearvoices()
+    # datastore.clearall()
+    # datastore.clearvoices()
     yield
     # shutdown Database client
     datastore.shutdown()
@@ -67,7 +69,7 @@ async def messenger_webhook(request: Request):
         f"""Invalid Request or Verification Token: given {verify_token}, expected {FB_VERIFY_TOKEN}.
         Have you set up the token based on README/Set up Messenger chatbot?"""
     )
-    return "Invalid Request or Verification Token"
+    return unauthorized_error("Invalid Request or Verification Token")
 
 
 @APP.post("/webhook")
@@ -90,11 +92,23 @@ async def messenger_post(data: facebook.Event) -> str:
                 answer = utils.handle_user_message(id, message.message)
             except Exception as e:  # todo: handling exceptions better
                 answer = f"ERROR! {e}"
-                LOGGER.error(f"ERROR:\n {e}")
+                raise e
 
         # Send a reply to the sender
         utils.reply_to(message.sender.id, answer)
         return "Success!"
+
+
+@APP.get(
+    "/users",
+    response_model=Sequence[weaver.User],
+    response_model_by_alias=False,
+    response_model_exclude_unset=True,
+)
+async def get_users(secret: str):
+    if secret is not None and secret == SECRET:
+        return datastore.get_users()
+    return unauthorized_error("Admin secret needed for this operations.")
 
 
 @APP.get("/privacy-policy", response_class=HTMLResponse)
@@ -111,7 +125,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     """Handles pydantic model validation error"""
     exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
     LOGGER.error(
-        f"Validation Exception with input: {pf(exc.errors()[0]['input'])}\n\n{pf(exc.errors()[0])}\n"
+        f"Request Validation Exception with input: {pf(exc.errors()[0]['input'])}\n\n{pf(exc.errors()[0])}\n"
     )
     content = {"status_code": 10422, "message": exc_str, "data": None}
     return JSONResponse(content=content, status_code=422)
@@ -127,3 +141,17 @@ async def general_exception_handler(request: Request, exc: Exception):
         content={"status_code": 10422, "message": exc_str, "data": None},
         status_code=500,
     )
+
+
+@APP.exception_handler(exceptions.DuplicatedError)
+async def duplicated_data_handler(*args, **kwargs):  # pylint:disable=unused-argument
+    return PlainTextResponse("Username is unavailable", 409)
+
+
+@APP.exception_handler(exceptions.NotFound)
+async def not_found_data_handler(*args, **kwargs):  # pylint:disable=unused-argument
+    return PlainTextResponse("Not Found", 404)
+
+
+def unauthorized_error(text: str = None):
+    return PlainTextResponse("Unauthorized" if text is None else text, 401)

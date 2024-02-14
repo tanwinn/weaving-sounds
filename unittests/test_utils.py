@@ -14,7 +14,7 @@ import requests
 import responses
 
 from api import datastore, utils
-from models import facebook
+from models import exceptions, facebook
 
 
 def __from_ts(ts: str, tz: Optional[str] = "UTC") -> datetime:
@@ -89,7 +89,7 @@ def test_handle_user_message_attribute_error(msg_data, mocker):
     # Mock external deps
     mocker.patch("api.datastore.insert_voice")
     invalid_msg = facebook.Message.model_validate(msg_data)
-    with pytest.raises(AttributeError):
+    with pytest.raises(exceptions.InputError):
         utils.handle_user_message("undefined_user", invalid_msg)
 
 
@@ -126,7 +126,7 @@ def test_handle_user_message_filetype_unknown(mocker):
             status_code=200,
         ),
     )
-    with pytest.raises(AttributeError):
+    with pytest.raises(exceptions.InputError):
         message = facebook.Message(
             mid="rainy-days",
             attachments=[

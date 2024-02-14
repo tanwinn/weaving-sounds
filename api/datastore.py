@@ -17,7 +17,7 @@ import pymongo
 import transaction
 from pydantic import BaseModel as PydanticModel
 
-from models import weaver
+from models import exceptions, weaver
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ def __get_documents(
         f"Getting multiple documents in {collection_name} " f"with query={query}"
     )
     collection = __database().get_collection(collection_name)
-    return collection.find(query)
+    return collection.find(filter=({"_id": query} if isinstance(query, str) else query))
 
 
 def __update_collection(
@@ -208,9 +208,9 @@ def insert_user(
 def get_user_by_id(id: str) -> Optional[weaver.User]:
     """Get the user by unique id (internal)."""
     doc = __get_document(USERS, query=id)
-    if doc:
-        doc = weaver.User.model_validate(doc)
-    return doc
+    if not doc:
+        raise exceptions.NotFound("User Not Found")
+    return weaver.User.model_validate(doc)
 
 
 def get_user_by_username(username: str) -> Optional[weaver.User]:
@@ -218,6 +218,11 @@ def get_user_by_username(username: str) -> Optional[weaver.User]:
     # Store a mapping username -> id
     user_id = __get_document(USERNAME_TO_ID, query=username)
     return get_user_by_id(user_id)
+
+
+def get_users() -> Sequence[weaver.User]:
+    """Get all users."""
+    return [weaver.User.model_validate(doc) for doc in __get_documents(USERS)]
 
 
 def update_user(user: weaver.User):

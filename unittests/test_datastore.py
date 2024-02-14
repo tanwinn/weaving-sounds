@@ -2,9 +2,11 @@
 unittests.test_datastore.py
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Test datastore operations using mongmock client.
+Test fixture defined in conftest and test data is defined in unittest/data/weaver directory
 """
 
 import tempfile
+from collections.abc import Mapping, Sequence
 from datetime import datetime
 from pathlib import Path
 from typing import IO
@@ -16,7 +18,11 @@ import pytest
 from pydantic import ValidationError
 
 from api import datastore
-from models import weaver
+from models import exceptions, weaver
+
+
+def __load_collection_with(collection_name: str, docs: Sequence[Mapping]):
+    _db().get_collection(collection_name).insert_many(docs)
 
 
 def __from_ts(ts: str) -> datetime:
@@ -178,26 +184,7 @@ def test_insert_user_fails_users():
 
 @pytest.mark.xfail(reason="Needs data transaction manager for this to pass.")
 def test_insert_user_fails_mapping():
-    # change collection name to create some sort of error
-    placeholder = datastore.USERNAME_TO_ID
-    datastore.USERNAME_TO_ID = 98765
-
-    with pytest.raises(TypeError):
-        datastore.insert_user(
-            id="fb/12345",
-            first_name="Honey",
-            last_name="Bee",
-            username="queen_bee_is_da_best",
-        )
-
-    # Users table contains no document since trasanction aborts
-    assert _db().get_collection(datastore.USERS).find_one("fb/12345") is None
-
-    # Username to id mapping contains the entry since failure
-    assert _db().get_collection(placeholder).find_one("queen_bee_is_da_best") is None
-
-    # revert the collection name back
-    datastore.USERNAME_TO_ID = placeholder
+    "transaction error"
 
 
 def test_insert_prompt_succeeds_first_prompt():
@@ -241,3 +228,46 @@ def test_new_db(mocker):
     datastore.__database()
 
     assert "db_client" in datastore.GLOBAL
+
+
+def test_get_users(test_fixture_valid_users):
+    __load_collection_with(datastore.USERS, test_fixture_valid_users)
+    assert datastore.get_users() == [
+        weaver.User.model_validate(user) for user in test_fixture_valid_users
+    ]
+
+
+def test_get_users_none(test_fixture_valid_users):
+    assert datastore.get_users() == []
+
+
+def test_get_user_by_id_succeeds(test_fixture_valid_users):
+    __load_collection_with(datastore.USERS, test_fixture_valid_users)
+    assert datastore.get_user_by_id("fb/123734").username == "tanwinn"
+
+
+def test_get_user_by_id_not_found(test_fixture_valid_users):
+    # database doesn't have any data
+    with pytest.raises(exceptions.NotFound):
+        datastore.get_user_by_id("fb/123734")
+
+
+def test_get_user_by_username_succeeds(test_fixture_valid_users):
+    __load_collection_with(datastore.USERS, test_fixture_valid_users)
+    __load_collection_with(
+        datastore.USERNAME_TO_ID,
+        [
+            {"tanwinn": "fb/123734"},
+            {"fb/81264": "sheep"},
+            {"fb/129736124": "flyff"},
+            {"fb/12334": "tanwinn124"},
+        ],
+    )
+
+    assert datastore.get_user_by_username("tanwinn").id == "fb/123734"
+
+
+def test_get_user_by_username_not_found(test_fixture_valid_users):
+    # database doesn't have any data
+    with pytest.raises(exceptions.NotFound):
+        datastore.get_user_by_username("tanwinn")

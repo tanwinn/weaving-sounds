@@ -4,6 +4,7 @@ tests.conftest.py
 Test fixture for the unit test suite. All test fixture defined in conftest MUST have the word `fixture`.
 """
 import json
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 import pytest
@@ -111,13 +112,19 @@ with open(str(WEAVER_TEST_DATA_PATH / "user.yaml")) as outfile:
 
 
 @pytest.fixture(scope="session", params=VALID_USER_DATA)
-def test_fixture_valid_user(request):
+def test_fixture_valid_user(request) -> Mapping:
     """Test data for valid user models"""
     return request.param
 
 
+@pytest.fixture(scope="session")
+def test_fixture_valid_users() -> Sequence[Mapping]:
+    """Test data for invalid user models"""
+    return VALID_USER_DATA
+
+
 @pytest.fixture(scope="session", params=INVALID_USER_DATA)
-def test_fixture_invalid_user(request):
+def test_fixture_invalid_user(request) -> Mapping:
     """Test data for invalid user models"""
     return request.param
 

@@ -32,8 +32,8 @@ class User(BaseModel):
     username: str  # unique & displayable user id on the website
     first_name: str  # user's first name
     last_name: Optional[str] = None  # user's last name
-    voice_set: Sequence[str] = {}  # user's voice files
-    prompt_set: Sequence[int] = {}  # user's prompt participated
+    voice_set: Set[str] = set()  # user's voice files
+    prompt_set: Set[int] = set()  # user's prompt participated
 
 
 class Prompt(BaseModel):

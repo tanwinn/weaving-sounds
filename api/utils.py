@@ -17,7 +17,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import requests
 
 from api import datastore
-from models import facebook
+from models import exceptions, facebook
 
 LOGGER = logging.getLogger(__name__)
 FB_PAGE_TOKEN = os.environ.get("FB_PAGE_TOKEN", "default")
@@ -54,10 +54,10 @@ def handle_fb_user(sender_id: Union[str, int]) -> str:
 def handle_user_message(user_id: str, message: facebook.Message):
     """If the user message's attachments are audios, archive them."""
     if not dict(message).get("attachments"):
-        raise AttributeError("User message doesn't have attachments.")
+        raise exceptions.InputError("User message doesn't have attachments.")
 
     if len(message.attachments) > 1:
-        raise AttributeError(
+        raise exceptions.InputError(
             "Too many attachements at once. Please upload one at a time."
         )
 
@@ -138,7 +138,7 @@ def __extract_and_store_audio_from_url(
         not attachment.type == facebook.AttachmentType.AUDIO
         or not attachment.payload.url
     ):
-        raise AttributeError("Attachment not an audio.")
+        raise exceptions.InputError("Attachment not an audio.")
 
     # Download the audio file
     try:
@@ -153,7 +153,9 @@ def __extract_and_store_audio_from_url(
     filename = __extract_attachment_filename(header)
     filetype = mimetypes.guess_extension(header.get("Content-Type"))
     if not filetype:  # if we cannot guess the file type (extension), raise error
-        raise AttributeError("Cannot detech the attachment's audio file extension.")
+        raise exceptions.InputError(
+            "Cannot detect the attachment's audio file extension."
+        )
 
     # Save the static file to voices
     datastore.insert_voice(
