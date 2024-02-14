@@ -1,4 +1,0 @@
-"('invalid:\\n'\n '- message:\\n'\n '    text: []\\n'\n '  recipient:\\n'\n '    id: sender_id\\n'\n '-\
-  \ message:\\n'\n '    text: text\\n'\n '  recipient: {}\\n'\n '- recipient:\\n'\n '    id: sender_id\\\
-  n'\n 'valid:\\n'\n '- message:\\n'\n '    text: this is a message\\n'\n '  recipient:\\n'\n '    id:\
-  \ sender_id\\n')"
