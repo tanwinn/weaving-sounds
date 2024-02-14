@@ -206,17 +206,22 @@ def test_handle_fb_user_new_registered_successfully(mocker):
     id = 123456789
     responses.add(
         responses.GET,
-        re.compile("https://graph.facebook.com/v19.0/*"),
+        re.compile(f"{utils.FB_GRAPH_API}*"),
         json={"first_name": "Takenobu", "last_name": "Igarashi", "id": id},
         status=200,
     )
 
     register_new_user_action = mocker.patch("api.datastore.insert_user")
+    reply_to_user_action = mocker.patch("api.utils.reply_to")
 
     assert utils.handle_fb_user(id) == f"fb/{id}"
 
     register_new_user_action.assert_called_once_with(
         f"fb/{id}", first_name="Takenobu", last_name="Igarashi"
+    )
+    reply_to_user_action.assert_called_once_with(
+        id,
+        f"New user detected. Registered user with ID fb/{id} on webiste. To change your displayable username, go to tanwinn.io/weaving-sounds :)",
     )
 
 
@@ -234,17 +239,22 @@ def test_handle_fb_user_new_registered_no_name_successfully(mocker):
     id = 123456789
     responses.add(
         responses.GET,
-        re.compile("https://graph.facebook.com/v19.0/*"),
+        re.compile(f"{utils.FB_GRAPH_API}*"),
         json={"id": id},
         status=200,
     )
 
     register_new_user_action = mocker.patch("api.datastore.insert_user")
+    reply_to_user_action = mocker.patch("api.utils.reply_to")
 
     assert utils.handle_fb_user(id) == f"fb/{id}"
 
     register_new_user_action.assert_called_once_with(
         f"fb/{id}", first_name="undefined", last_name=None
+    )
+    reply_to_user_action.assert_called_once_with(
+        id,
+        f"New user detected. Registered user with ID fb/{id} on webiste. To change your displayable username, go to tanwinn.io/weaving-sounds :)",
     )
 
 
@@ -255,3 +265,29 @@ def test_datetime_from_timestamp():
     assert utils.datetime_from_ts(
         "2024-01-04 03:30:00", "America/Los_Angeles"
     ) == __from_ts("2024-01-04 03:30:00", "America/Los_Angeles")
+
+
+@responses.activate
+def test_reply_to_successfully():
+    # Mock external http calls to graph api
+    responses.add(
+        responses.POST,
+        re.compile(f"{utils.FB_GRAPH_API}*"),
+        status=200,
+    )
+    assert utils.reply_to(123456, "This is a reply.") == {
+        "recipient": {"id": 123456},
+        "message": {"text": "This is a reply."},
+    }
+
+
+@responses.activate
+def test_reply_to_conn_err():
+    # Mock external http calls to graph api
+    responses.add(
+        responses.POST,
+        re.compile(f"{utils.FB_GRAPH_API}*"),
+        status=500,
+    )
+    with pytest.raises(requests.exceptions.HTTPError):
+        utils.reply_to(123456, "This is a reply.")

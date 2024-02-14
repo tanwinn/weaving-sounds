@@ -68,18 +68,22 @@ This will generate a forwarding url like `forwarding-url.ngrok-free.app`
 
     - Verify Token: `<your_verify_token> set in .env`
 
-- Webhook fields > `message_deliveries`, `message_reads`, `messages`, `messaging_postbacks`
+- Webhook fields > `messages`
 - Generate Access Token > Add the page you wanted to integrate the chatbot with
 - Then press Token > Generate > generated the `<fb_page_token>` and updated it to `.env`
 
 The app can now be tested by test users (if in Development) or the public (if Published).
+
+### Test webhooks E2E
+- Go to app Dashboard https://developers.facebook.com/apps/
+- Webhooks fields > Test
 
 ## Set up Mongo Database locally
 - Download the community version [here](https://www.mongodb.com/try/download/community)
 - More instructions at [official MongoDBdocs](https://www.mongodb.com/docs/manual/tutorial/manage-mongodb-processes/)
 ```
 cd weaving-sounds
-mongod --dbpath voices --port 27017
+mongod --dbpath voices/mongo --port 27017
 ```
 ## Deploy the app to GCloud
 TBD

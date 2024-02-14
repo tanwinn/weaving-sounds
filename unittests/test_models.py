@@ -2,6 +2,8 @@
 unittests.test_models.py
 ~~~~~~~~~~~~~~~~~
 Test ~/models
+todo: Use examples here for testing instead
+https://developers.facebook.com/docs/messenger-platform/reference/webhook-events/messages
 """
 
 from pprint import pformat as pf

@@ -3,6 +3,7 @@ api.main.py
 """
 import logging
 import os
+import pickle
 from contextlib import asynccontextmanager
 from pathlib import Path
 from pprint import pformat as pf
@@ -26,6 +27,8 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown logic for the API."""
     # startup Database client
     datastore.startup()
+    datastore.clearall()
+    datastore.clearvoices()
     yield
     # shutdown Database client
     datastore.shutdown()
@@ -86,14 +89,10 @@ async def messenger_post(data: facebook.Event) -> str:
                 id = utils.handle_fb_user(message.sender.id)
                 answer = utils.handle_user_message(id, message.message)
             except Exception as e:  # todo: handling exceptions better
-                if id:
-                    answer = (
-                        f"{e} Facebook User registered with userid {id} on website."
-                    )
-                else:
-                    answer = f"ERROR! {e}"
+                answer = f"ERROR! {e}"
                 LOGGER.error(f"ERROR:\n {e}")
 
+        # Send a reply to the sender
         utils.reply_to(message.sender.id, answer)
         return "Success!"
 
@@ -111,8 +110,9 @@ def get_privacy_policy():
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handles pydantic model validation error"""
     exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
-    # or logger.error(f'{exc}')
-    LOGGER.error(request, exc_str)
+    LOGGER.error(
+        f"Validation Exception with input: {pf(exc.errors()[0]['input'])}\n\n{pf(exc.errors()[0])}\n"
+    )
     content = {"status_code": 10422, "message": exc_str, "data": None}
     return JSONResponse(content=content, status_code=422)
 
@@ -120,6 +120,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @APP.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
     """Handles general error"""
+    LOGGER.error(f"{request.json()} :: {exc}")
+
     exc_str = f"{exc}".replace("\n", " ").replace("   ", " ")
-    # or logger.error(f'{exc}')
-    LOGGER.error(request, exc_str)
+    return JSONResponse(
+        content={"status_code": 10422, "message": exc_str, "data": None},
+        status_code=500,
+    )

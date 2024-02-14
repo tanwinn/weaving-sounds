@@ -1,11 +1,13 @@
 """
 models.facebook.py
 ~~~~~~~~~~~~~~~~~~~~~~
-Facebook Message models
+Facebook Message models.
+Based on Meta Developers Document
+https://developers.facebook.com/docs/messenger-platform/reference/webhook-events
 """
 from collections.abc import Mapping, Sequence
 from enum import Enum
-from typing import Optional
+from typing import Optional, Union
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -46,7 +48,7 @@ class Message(BaseModel):
 class User(BaseModel):
     """User model"""
 
-    id: str
+    id: Union[str, int]
 
 
 class Messaging(BaseModel):
@@ -59,7 +61,7 @@ class Messaging(BaseModel):
 
 
 class MessageEvent(BaseModel):
-    """MessageEvent models in webhook event"""
+    """MessageEvent models in webhook event."""
 
     id: str
     time: int
@@ -78,6 +80,12 @@ class Event(BaseModel):
         if value == "page":
             return value
         raise ValueError("object must be page")
+
+
+""" 
+Models based on Send API
+https://developers.facebook.com/docs/messenger-platform/reference/send-api
+"""
 
 
 class ResponseMessage(BaseModel):

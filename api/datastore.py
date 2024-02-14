@@ -268,3 +268,18 @@ def __get_or_create_prompt_manager() -> weaver.PromptManager:
     else:
         doc = weaver.PromptManager.model_validate(doc)
     return doc
+
+
+def clearall():
+    """Drop all collections."""
+    for name in (METADATAS, USERS, USERNAME_TO_ID, PROMPTS, PROMPT_MANAGER):
+        __database().drop_collection(name)
+    LOGGER.warning("Cleared all collections in database.")
+
+
+def clearvoices():
+    """Delete all voice files."""
+    for voice in VOICES_DIR.iterdir():
+        if voice.is_file():
+            voice.unlink(missing_ok=True)
+    LOGGER.warning("Cleared all voice record files.")

@@ -21,7 +21,7 @@ from models import facebook
 
 LOGGER = logging.getLogger(__name__)
 FB_PAGE_TOKEN = os.environ.get("FB_PAGE_TOKEN", "default")
-FB_GRAPH_API = "https://graph.facebook.com/me/messages?"
+FB_GRAPH_API = "https://graph.facebook.com/v19.0"
 
 
 def handle_fb_user(sender_id: Union[str, int]) -> str:
@@ -33,7 +33,7 @@ def handle_fb_user(sender_id: Union[str, int]) -> str:
         try:
             # According to Meta's doc: https://developers.facebook.com/docs/messenger-platform/identity/user-profile/#available-profile-fields
             response = requests.get(
-                f"https://graph.facebook.com/v19.0/{sender_id}?access_token={FB_PAGE_TOKEN}"
+                f"{FB_GRAPH_API}/{sender_id}?access_token={FB_PAGE_TOKEN}"
             )
             response.raise_for_status()
             response = response.json()
@@ -41,6 +41,10 @@ def handle_fb_user(sender_id: Union[str, int]) -> str:
                 user_id,
                 first_name=response.get("first_name", "undefined"),
                 last_name=response.get("last_name", None),
+            )
+            reply_to(
+                sender_id,
+                f"New user detected. Registered user with ID {user_id} on webiste. To change your displayable username, go to tanwinn.io/weaving-sounds :)",
             )
         except requests.exceptions.RequestException as e:
             raise requests.exceptions.HTTPError(e)
@@ -60,11 +64,11 @@ def handle_user_message(user_id: str, message: facebook.Message):
     __extract_and_store_audio_from_url(
         user_id=user_id, attachment=message.attachments[0], voice_id=f"{message.mid}"
     )
-    LOGGER.info("Saved audio & metadata: {message.mid}")
-    return f"Saved audio files with ID {message.mid}"
+    LOGGER.info(f"Saved audio & metadata: {message.mid}")
+    return f"Saved audio file with ID {message.mid}"
 
 
-def reply_to(user_id: str, text: str):
+def reply_to(user_id: str, text: str) -> Mapping:
     """
     Compose a message/reply to `user_id` with content of `text`
     and send it to Messenger through POST call to FB_GRAPH_API
@@ -73,9 +77,12 @@ def reply_to(user_id: str, text: str):
         recipient=facebook.User(id=user_id),
         message=facebook.ResponseMessage(text=text),
     ).model_dump()
-    LOGGER.info(f"Prepping call to facebook with data={pf(data)}")
-    response = requests.post(f"{FB_GRAPH_API}access_token={FB_PAGE_TOKEN}", json=data)
+    LOGGER.info(f"Prepping call to Facebook Graph API.")
+    response = requests.post(
+        f"{FB_GRAPH_API}/me/messages?access_token={FB_PAGE_TOKEN}", json=data
+    )
     response.raise_for_status()
+    return data
 
 
 def __extract_header_datetime(header: Mapping) -> datetime:
